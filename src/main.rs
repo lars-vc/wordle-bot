@@ -1,7 +1,6 @@
 use regex::Regex;
-use std::fs;
 use std::fs::File;
-use std::io::{self, prelude::*, BufRead, BufReader};
+use std::io::{self, BufRead, BufReader};
 fn main() {
     //known letters = []
     //excluded letters = []
@@ -11,7 +10,9 @@ fn main() {
     let stdin = io::stdin();
     let mut word = vec!['.', '.', '.', '.', '.'];
     let mut v = get_words();
-    while true {
+    println!("Meta word: irate");
+    println!("First word:");
+    loop {
         let mut iter = stdin.lock().lines();
         let line = iter.next().unwrap().unwrap();
         let mut nextkey = false;
@@ -33,18 +34,15 @@ fn main() {
                 }
                 pos += 1;
             }
-            println!("{}", i);
         }
-        println!("{:?}", known);
-        println!("{:?}", excluded);
-        println!("{:?}", word);
         let mut tss = vec![];
         for w in v {
             // bit of a hack to always add é idk
-            let re = Regex::new(format!("^[^{}é]*$", excluded.iter().collect::<String>()).as_str())
-                .unwrap();
+            let excludedcheck =
+                Regex::new(format!("^[^{}é]*$", excluded.iter().collect::<String>()).as_str())
+                    .unwrap();
             // word does not have excluded letters
-            if re.is_match(&w) {
+            if excludedcheck.is_match(&w) {
                 let mut b = true;
                 for k in &known {
                     if !w.contains(&k.to_string()) {
@@ -53,28 +51,29 @@ fn main() {
                     }
                 }
                 if b {
-                    let re2 =
+                    let wordcheck =
                         Regex::new(format!("^{}*$", word.iter().collect::<String>()).as_str())
                             .unwrap();
-                    if re2.is_match(&w) {
+                    if wordcheck.is_match(&w) {
                         tss.push(w);
                     }
                 }
             }
-            //if rege
         }
         v = tss;
-        println!("{:?}", v);
         //repeat
         if v.len() == 1 {
+            println!("Match found! {}", v[0]);
             break;
         }
-        // print recommendation
+        println!("\nall matches: {:?}\n", v);
+        println!("Some meta words: irate, flops, munch");
+        println!("Next word:");
     }
 }
 
 fn get_words() -> Vec<String> {
-    let file = File::open("src/words.txt").unwrap();
+    let file = File::open("/home/larsvc/.config/wordle-bot/words.txt").unwrap();
     let reader = BufReader::new(file);
     let mut words = vec![];
     for line in reader.lines() {
